@@ -8,3 +8,5 @@ Thumbs.db
 node_modules/
 AGENTS.md
 PLANEJAMENTO.md
+.specify/
+specs/
