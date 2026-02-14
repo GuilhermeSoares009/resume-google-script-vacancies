@@ -1,1 +1,10 @@
-PLANEAJMENTO.md
+.clasp.json
+.clasprc.json
+.claspignore
+.env
+.env.*
+.DS_Store
+Thumbs.db
+node_modules/
+AGENTS.md
+PLANEJAMENTO.md
