@@ -37,7 +37,7 @@ function processJobApplication(formData) {
     cvData.metadata.driveFileUrl = output.fileUrl;
     cvData.metadata.warnings = warnings;
 
-    return {
+    const result = {
       status: "ok",
       job_id: parseResult.jobData.id,
       cv_id: cvData.cvId,
@@ -46,6 +46,17 @@ function processJobApplication(formData) {
       review_required: true,
       warnings: warnings
     };
+
+    notifySuccess(config, {
+      company: parseResult.jobData.metadata.company,
+      position: parseResult.jobData.metadata.position,
+      outputUrl: output.fileUrl,
+      matchScore: cvData.matchScore
+    });
+
+    trackApplication(config, parseResult.jobData, cvData);
+
+    return result;
   } catch (error) {
     return handleError(error, { action: "process_job_application" });
   }
@@ -54,9 +65,15 @@ function processJobApplication(formData) {
 function mapGeminiResponse(raw) {
   const response = raw || {};
   return {
-    matchScore: Number(response.match_score || 0),
+    matchScore: Number(String(response.match_score || 0).replace("%", "")) || 0,
     professionalSummary: response.professional_summary || "",
-    topSkills: response.top_skills || [],
+    topSkills: Array.isArray(response.top_skills)
+      ? response.top_skills
+      : (response.top_skills && typeof response.top_skills === "object"
+          ? Object.keys(response.top_skills).reduce(function (acc, key) {
+              return acc.concat(response.top_skills[key] || []);
+            }, [])
+          : []),
     experiences: response.experiences || [],
     projects: response.projects || [],
     atsKeywords: response.ats_keywords || []

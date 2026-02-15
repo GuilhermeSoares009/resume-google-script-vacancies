@@ -25,11 +25,20 @@ Apps Script system that personalizes resumes based on job descriptions with a hu
 All secrets and environment values must be stored in Apps Script Properties Service.
 Required keys:
 - `GEMINI_API_KEY`
+- `TEMPLATE_FILE_ID` (Google Docs file ID, not DOCX)
+- `OUTPUT_FOLDER_ID`
+- `TRACKING_SHEET_ID`
+- `NOTIFICATION_EMAIL`
 
 Optional keys (with defaults):
-- `GEMINI_MODEL` (default: `gemini-1.5-pro-latest`)
+- `GEMINI_MODEL` (default: `gemini-2.5-flash`)
 - `GEMINI_MAX_TOKENS` (default: `8000`)
 - `GEMINI_TEMPERATURE` (default: `0.3`)
+- `BASE_RESUME_TEXT` (default: empty)
+
+Model notes:
+- Use a model name without the `models/` prefix (e.g. `gemini-2.5-flash`, `gemini-2.5-pro`).
+- This project uses the `v1` Gemini endpoint.
 
 ## Local Setup
 See `docs/SETUP.md` for clasp setup and deployment steps.

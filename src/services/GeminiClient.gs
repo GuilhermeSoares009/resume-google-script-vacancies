@@ -1,7 +1,7 @@
 function generatePersonalization(jobData, baseResume) {
   const config = getConfig();
   const payload = buildGeminiPayload(jobData, baseResume, config);
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/" + config.geminiModel + ":generateContent?key=" + config.geminiApiKey;
+  const url = "https://generativelanguage.googleapis.com/v1/models/" + config.geminiModel + ":generateContent?key=" + config.geminiApiKey;
 
   const response = retryWithBackoff(function () {
     return withRateLimit("gemini", function () {
@@ -33,7 +33,7 @@ function buildGeminiPayload(jobData, baseResume, config) {
     jobText,
     "Base resume:",
     resumeText,
-    "Return JSON only with fields: match_score, professional_summary, top_skills, experiences, projects, ats_keywords"
+    "Return JSON only (no markdown, no code fences) with fields: match_score, professional_summary, top_skills, experiences, projects, ats_keywords"
   ].join("\n");
 
   return {
@@ -45,8 +45,7 @@ function buildGeminiPayload(jobData, baseResume, config) {
     ],
     generationConfig: {
       temperature: config.geminiTemperature,
-      maxOutputTokens: config.geminiMaxTokens,
-      responseMimeType: "application/json"
+      maxOutputTokens: config.geminiMaxTokens
     }
   };
 }
@@ -83,8 +82,17 @@ function extractGeminiText(data) {
 }
 
 function safeParseJson(text) {
+  const cleaned = String(text || "")
+    .replace(/```json/gi, "```")
+    .replace(/```/g, "")
+    .trim();
+
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  const jsonText = start >= 0 && end >= 0 ? cleaned.slice(start, end + 1) : cleaned;
+
   try {
-    return JSON.parse(text);
+    return JSON.parse(jsonText);
   } catch (error) {
     throw new Error("Gemini returned invalid JSON payload");
   }
