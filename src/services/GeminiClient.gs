@@ -29,11 +29,15 @@ function buildGeminiPayload(jobData, baseResume, config) {
   const prompt = [
     "You are a technical recruiter.",
     "Analyze the job description and return a JSON with resume adaptations.",
+    "Rules:",
+    "- For template fields (primary_backend_stack, container_tech, cloud_stack, test_stack, cache_tech, secondary_backend_stack, database_stack, frontend_stack, freelance_stack, legacy_backend_stack, legacy_databases, tech_stack_comma_separated), use ONLY technologies explicitly mentioned in the job description.",
+    "- If a template field is not present in the job description, return an empty string for that field.",
+    "- Do not pull technologies from the base resume for template fields.",
     "Job description:",
     jobText,
     "Base resume:",
     resumeText,
-    "Return JSON only (no markdown, no code fences) with fields: match_score, professional_summary, top_skills, experiences, projects, ats_keywords"
+    "Return JSON only (no markdown, no code fences) with fields: match_score, professional_summary, top_skills, experiences, projects, ats_keywords, primary_backend_stack, container_tech, cloud_stack, test_stack, cache_tech, secondary_backend_stack, database_stack, frontend_stack, freelance_stack, legacy_backend_stack, legacy_databases, tech_stack_comma_separated"
   ].join("\n");
 
   return {

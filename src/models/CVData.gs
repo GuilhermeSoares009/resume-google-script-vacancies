@@ -10,7 +10,19 @@ function createPersonalizedCV(jobId, content, metadata) {
       topSkills: body.topSkills || [],
       experiences: body.experiences || [],
       projects: body.projects || [],
-      atsKeywords: body.atsKeywords || []
+      atsKeywords: body.atsKeywords || [],
+      primaryBackendStack: body.primaryBackendStack || "",
+      containerTech: body.containerTech || "",
+      cloudStack: body.cloudStack || "",
+      testStack: body.testStack || "",
+      cacheTech: body.cacheTech || "",
+      secondaryBackendStack: body.secondaryBackendStack || "",
+      databaseStack: body.databaseStack || "",
+      frontendStack: body.frontendStack || "",
+      freelanceStack: body.freelanceStack || "",
+      legacyBackendStack: body.legacyBackendStack || "",
+      legacyDatabases: body.legacyDatabases || "",
+      techStackCommaSeparated: body.techStackCommaSeparated || ""
     },
     metadata: {
       templateUsed: meta.templateUsed || "",

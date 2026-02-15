@@ -36,6 +36,33 @@ Optional keys (with defaults):
 - `GEMINI_TEMPERATURE` (default: `0.3`)
 - `BASE_RESUME_TEXT` (default: empty)
 
+Template placeholders (optional, set in Script Properties):
+- By default, Gemini fills these fields per vacancy; Script Properties act as fallback overrides.
+- `RESUME_PROFESSIONAL`
+- `TOP_SKILLS_SECTION`
+- `PRIMARY_BACKEND_STACK`
+- `CONTAINER_TECH`
+- `CLOUD_STACK`
+- `CURRENT_LEVEL`
+- `LEVEL`
+- `TEST_STACK`
+- `CACHE_TECH`
+- `SECONDARY_BACKEND_STACK`
+- `DATABASE_STACK`
+- `FRONTEND_STACK`
+- `FREELANCE_STACK`
+- `LEGACY_BACKEND_STACK`
+- `LEGACY_DATABASES`
+- `BACKEND_SKILLS`
+- `AI_SKILLS`
+- `AUTOMATION_SKILLS`
+- `DATA_SKILLS`
+- `INFRA_SKILLS`
+- `ARCHITECTURE_SKILLS`
+- `TEST_SKILLS`
+- `VERSIONING_SKILLS`
+- `TECH_STACK_COMMA_SEPARATED`
+
 Model notes:
 - Use a model name without the `models/` prefix (e.g. `gemini-2.5-flash`, `gemini-2.5-pro`).
 - This project uses the `v1` Gemini endpoint.

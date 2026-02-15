@@ -24,6 +24,10 @@ function parseJobDescription(rawText, sourceUrl) {
 }
 
 function detectLanguage(text) {
+  if (!LanguageApp || typeof LanguageApp.detectLanguage !== "function") {
+    return "pt-BR";
+  }
+
   try {
     const detected = LanguageApp.detectLanguage(text || "");
     if (CONSTANTS.SUPPORTED_LANGUAGES.indexOf(detected) >= 0) {

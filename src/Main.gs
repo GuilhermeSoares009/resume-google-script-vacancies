@@ -1,13 +1,46 @@
 function onFormSubmit(e) {
-  const formData = e && e.namedValues ? e.namedValues : {};
+  const formData = normalizeFormData(e);
+  Logger.log(JSON.stringify({
+    hasEvent: Boolean(e),
+    hasNamedValues: Boolean(e && e.namedValues),
+    hasResponse: Boolean(e && e.response),
+    formData: formData
+  }));
   return processJobApplication(formData);
+}
+
+function normalizeFormData(e) {
+  if (e && e.namedValues) {
+    return e.namedValues;
+  }
+
+  if (e && e.response && typeof e.response.getItemResponses === "function") {
+    const responses = e.response.getItemResponses();
+    const mapped = {};
+    for (let i = 0; i < responses.length; i += 1) {
+      const item = responses[i].getItem();
+      const title = item ? item.getTitle() : "";
+      if (title) {
+        mapped[title] = [String(responses[i].getResponse() || "")];
+      }
+    }
+    return mapped;
+  }
+
+  return {};
 }
 
 function processJobApplication(formData) {
   try {
+    Logger.log("process_job_application_start");
     const jobText = resolveJobText(formData);
+    Logger.log("job_text_length:" + String(jobText || "").length);
     const sourceUrl = resolveField(formData, ["URL", "Link", "Source"]);
     const parseResult = parseJobDescription(jobText, sourceUrl);
+    Logger.log("parse_result_ok:" + String(parseResult && parseResult.ok));
+    if (parseResult && !parseResult.ok && parseResult.reason) {
+      Logger.log("parse_result_reason:" + String(parseResult.reason));
+    }
 
     if (!parseResult.ok) {
       return {
@@ -17,8 +50,13 @@ function processJobApplication(formData) {
     }
 
     const config = getConfig();
+    Logger.log("gemini_request_start");
     const rawGemini = generatePersonalization(parseResult.jobData, config.baseResumeText);
-    const content = mapGeminiResponse(rawGemini);
+    Logger.log("gemini_request_done");
+    Logger.log(JSON.stringify(rawGemini));
+    let content = mapGeminiResponse(rawGemini);
+    content = filterTemplateFieldsByJobText(content, parseResult.jobData.rawText || "");
+    Logger.log(JSON.stringify(content));
     const warnings = [];
 
     if (content.matchScore < CONSTANTS.DEFAULT_MATCH_THRESHOLD) {
@@ -58,8 +96,56 @@ function processJobApplication(formData) {
 
     return result;
   } catch (error) {
+    Logger.log(String(error && error.stack ? error.stack : error));
     return handleError(error, { action: "process_job_application" });
   }
+}
+
+function filterTemplateFieldsByJobText(content, jobText) {
+  const text = String(jobText || "").toLowerCase();
+  const updated = Object.assign({}, content);
+
+  const fields = [
+    "primaryBackendStack",
+    "containerTech",
+    "cloudStack",
+    "testStack",
+    "cacheTech",
+    "secondaryBackendStack",
+    "databaseStack",
+    "frontendStack",
+    "freelanceStack",
+    "legacyBackendStack",
+    "legacyDatabases",
+    "techStackCommaSeparated"
+  ];
+
+  fields.forEach(function (field) {
+    updated[field] = filterListByText(updated[field], text);
+  });
+
+  return updated;
+}
+
+function filterListByText(value, text) {
+  if (!value) {
+    return "";
+  }
+
+  const raw = Array.isArray(value) ? value.join(", ") : String(value);
+  const parts = raw.split(",").map(function (item) {
+    return item.trim();
+  }).filter(function (item) {
+    return item.length > 0;
+  });
+
+  const filtered = parts.filter(function (item) {
+    const token = item.toLowerCase();
+    const base = token.split(" ")[0];
+    return text.indexOf(token) >= 0 || (base && text.indexOf(base) >= 0);
+  });
+
+  return filtered.join(", ");
 }
 
 function mapGeminiResponse(raw) {
@@ -76,7 +162,19 @@ function mapGeminiResponse(raw) {
           : []),
     experiences: response.experiences || [],
     projects: response.projects || [],
-    atsKeywords: response.ats_keywords || []
+    atsKeywords: response.ats_keywords || [],
+    primaryBackendStack: response.primary_backend_stack || "",
+    containerTech: response.container_tech || "",
+    cloudStack: response.cloud_stack || "",
+    testStack: response.test_stack || "",
+    cacheTech: response.cache_tech || "",
+    secondaryBackendStack: response.secondary_backend_stack || "",
+    databaseStack: response.database_stack || "",
+    frontendStack: response.frontend_stack || "",
+    freelanceStack: response.freelance_stack || "",
+    legacyBackendStack: response.legacy_backend_stack || "",
+    legacyDatabases: response.legacy_databases || "",
+    techStackCommaSeparated: response.tech_stack_comma_separated || ""
   };
 }
 
